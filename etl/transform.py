@@ -19,7 +19,7 @@ class DataTransformer:
             # Simple moving averages, (20 approximate trading month, 50 approx 2-3 trading months, 200 approx trading year)
             pl.col("Close").rolling_mean(window_size=20).over("symbol").alias("sma_20"),
             pl.col("Close").rolling_mean(window_size=50).over("symbol").alias("sma_50"),
-            pl.col("Close").rolling_mean(window_size=200).over("symbol").alias("sma_200")
+            pl.col("Close").rolling_mean(window_size=200).over("symbol").alias("sma_200"),
 
             # Volatility (20 day rolling std of returns)
             pl.col("daily_return").rolling_std(window_size=20).over("symbol").alias("volatility_20d"),
