@@ -1,1 +1,3 @@
 config/keys.env
+*.pyc
+__pycache__/
