@@ -11,6 +11,9 @@ class PriceRecord(BaseModel):
     Close: float
     Volume: int
     symbol: str
+    Dividends: Optional[float] = None
+    Stock_Splits: Optional[float] = None
+    Capital_Gains: Optional[float] = None
 
     @field_validator("High", "Low", "Open", "Close")
     def prices_positive(cls, val):
@@ -29,10 +32,10 @@ class FundamentalRecord(BaseModel):
     symbol: str
     market_cap: Optional[float]
     pe_ratio: Optional[float]
-    divident_yield: Optional[float]
+    dividend_yield: Optional[float]
     beta: Optional[float]
-    sector: Optional[float]
-    industry: Optional[float]
+    sector: Optional[str] = None
+    industry: Optional[str] = None
 
 class NewsRecord(BaseModel):
     symbol: str
