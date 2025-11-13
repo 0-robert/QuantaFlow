@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     ALPHA_VANTAGE_KEY: str
     NEWS_API_KEY: str
+    DB_PATH: str
 
     class Config:
         env_file = ".env"
