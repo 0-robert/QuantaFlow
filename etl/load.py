@@ -14,7 +14,7 @@ class DataLoader:
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
         # Partition the data by symbol
-
+        print(df.columns)
         for symbol in df["symbol"].unique():
             symbol_df = df.filter(pl.col("symbol") == symbol)
             file_path = f"{output_dir}/{symbol}.parquet"
@@ -38,7 +38,7 @@ class DataLoader:
         con.execute(f"INSERT INTO {table_name} SELECT * FROM df")
 
         # Metadata log for info
-        row_count = con.execute("SELECT COUNT(*) FROM {table_name}").fetchone()[0]
+        row_count = con.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
         print(f"Loaded {row_count} rows into {table_name}")
         # TODO Replace with LOGGER and also find out why fetchone()?
 
@@ -66,10 +66,12 @@ class DataLoader:
                 status VARCHAR
             )
         ''')
+
+        next_id = con.execute("SELECT COALESCE(MAX(id), 0) + 1 FROM pipeline_logs").fetchone()[0]
         
         con.execute(f'''
-            INSERT INTO pipeline_logs (table_name, run_time, row_count, status)
-            VALUES ('{table_name}', '{datetime.now()}', {row_count}, '{status}')
+            INSERT INTO pipeline_logs (id, table_name, run_time, row_count, status)
+            VALUES ('{next_id}', '{table_name}', '{datetime.now()}', {row_count}, '{status}')
         ''')
         
         con.close()
