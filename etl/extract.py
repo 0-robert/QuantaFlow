@@ -1,5 +1,6 @@
 import yfinance as yf
 from config.settings import settings
+from alpha_vantage.fundamentaldata import FundamentalData
 
 import requests
 from datetime import datetime, timedelta
@@ -40,17 +41,37 @@ class DataExtractor:
         fundamentals = []
 
         for symbol in symbols:
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            fundamentals.append({
-                "symbol": symbol,
-                "market_cap": info.get("marketCap"),
-                "pe_ratio": info.get("trailingPE"),
-                "dividend_yield": info.get("dividendYield"),
-                "beta": info.get("beta"),
-                "sector": info.get("sector"),
-                "industry": info.get("industry")
-            })
+            try:
+                # Fetch company overview
+                data, _ = fd.get_company_overview(symbol)
+
+                # data is a single-row DataFrame; get scalars with .iloc[0]
+                row = data.iloc[0]
+
+                fundamentals.append({
+                    "symbol": symbol,
+                    "market_cap": float(row["MarketCapitalization"]) if row["MarketCapitalization"] else None,
+                    "pe_ratio": float(row["PERatio"]) if row["PERatio"] else None,
+                    "dividend_yield": float(row["DividendYield"]) if row["DividendYield"] else None,
+                    "beta": float(row["Beta"]) if row["Beta"] else None,
+                    "sector": row["Sector"],
+                    "industry": row["Industry"]
+                })
+
+                # Sleep 12s to avoid hitting free tier rate limit (5 requests/min)
+                time.sleep(12)
+
+            except Exception as e:
+                print(f"Failed to fetch {symbol}: {e}")
+                fundamentals.append({
+                    "symbol": symbol,
+                    "market_cap": None,
+                    "pe_ratio": None,
+                    "dividend_yield": None,
+                    "beta": None,
+                    "sector": None,
+                    "industry": None
+                })
         
         return pl.DataFrame(fundamentals)
     
