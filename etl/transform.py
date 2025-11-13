@@ -35,7 +35,7 @@ class DataTransformer:
             (pl.col("Close") / pl.col("Close").first()).over("symbol").alias("normalised_prices")
         ])
     
-    def transform_pipeline(self, df: pl.dataFrame):
+    def transform_pipeline(self, df: pl.DataFrame):
         '''Run full tranformation pipeline'''
 
         df = self.calculate_returns(df)
