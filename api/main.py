@@ -17,7 +17,8 @@ def root():
             "/returns/{symbol}",
             "/fundamentals/{symbol}",
             "/sentiment/{symbol}",
-            "/query"
+            "/query",
+            "/stats"
         ]
     }
 
