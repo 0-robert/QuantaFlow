@@ -7,7 +7,6 @@ app = FastAPI(title="QuantaFlow API", description="Financial DataLake API")
 
 DB_PATH = "data/lake/quantaflow.duckdb"
 
-
 @app.get("/")
 def root():
     return {
