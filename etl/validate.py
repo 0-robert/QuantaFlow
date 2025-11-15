@@ -20,10 +20,47 @@ class IntradayBar(BaseModel):
     rsi: Optional[float] = None
     volume_ratio: Optional[float] = None
 
+# SENTIMENT DATA (FinBERT compatible)
+class SentimentRecord(BaseModel):
+    symbol: str
+    timestamp: datetime
+    source: str  # 'news', 'filings', 'social', etc.
+    text: str
+
+    # FinBERT outputs probabilities for each class
+    positive: float
+    neutral: float
+    negative: float
+
+
+    @field_validator("positive", "neutral", "negative")
+    def probability_range(cls, val):
+        if not 0 <= val <= 1:
+            raise ValueError("FinBERT probabilities must be between 0 and 1")
+        return val
+
+    @field_validator("positive")
+    def prob_sum(cls, v, values):
+        '''
+        Validate that positive + neutral + negative = 1
+        Only runs once (on field 'positive'), after the other fields are present.
+        '''
+        neg = values.get("negative")
+        neu = values.get("neutral")
+        if neg is not None and neu is not None:
+            total = v + neg + neu
+            if abs(total - 1.0) > 1e-3:
+                raise ValueError(
+                    f"FinBERT probability sum must be 1 (got {total})"
+                )
+        return v
+
 class MacroIndicator(BaseModel):
     date: datetime
     indicator: str  # 'vix', 'treasury_10y', etc.
-    value: float
+    value: Optional[float]    # cleaned numeric
+    raw: Optional[str] = None # original format/string
+    unit: Optional[str] = None  # "%", "bps", "index", etc.
 
 class EnhancedFundamental(BaseModel):
     symbol: str
