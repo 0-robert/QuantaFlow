@@ -3,6 +3,54 @@ from datetime import datetime
 from typing import Optional
 import polars as pl
 
+class IntradayBar(BaseModel):
+    symbol: str
+    timestamp: datetime
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: int
+    vwap: Optional[float] = None  # Volume-weighted average price
+    trades: Optional[int] = None  # Number of trades
+    
+    # Derived fields
+    returns: Optional[float] = None
+    volatility_20min: Optional[float] = None
+    rsi: Optional[float] = None
+    volume_ratio: Optional[float] = None
+
+class MacroIndicator(BaseModel):
+    date: datetime
+    indicator: str  # 'vix', 'treasury_10y', etc.
+    value: float
+
+class EnhancedFundamental(BaseModel):
+    symbol: str
+    market_cap: Optional[float]
+    pe_ratio: Optional[float]
+    peg_ratio: Optional[float]
+    price_to_book: Optional[float]
+    roe: Optional[float]  
+    profit_margin: Optional[float]
+    operating_margin: Optional[float]
+    debt_to_equity: Optional[float]
+    beta: Optional[float]
+    dividend_yield: Optional[float]
+    sector: Optional[str]
+    industry: Optional[str]
+    week_52_high: Optional[float]
+    week_52_low: Optional[float]
+
+class SECFiling(BaseModel):
+    symbol: str
+    filing_date: datetime
+    form_type: str  # '8-K', '13F-HR', '10-Q', etc.
+    accession_number: str
+    url: Optional[str] = None
+
+# OLD
+
 class PriceRecord(BaseModel):
     Date: datetime
     Open: float
