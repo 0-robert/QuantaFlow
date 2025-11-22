@@ -3,6 +3,91 @@ from datetime import datetime
 from typing import Optional
 import polars as pl
 
+class IntradayBar(BaseModel):
+    symbol: str
+    timestamp: datetime
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: int
+    vwap: Optional[float] = None  # Volume-weighted average price
+    trades: Optional[int] = None  # Number of trades
+    
+    # Derived fields
+    returns: Optional[float] = None
+    volatility_20min: Optional[float] = None
+    rsi: Optional[float] = None
+    volume_ratio: Optional[float] = None
+
+# SENTIMENT DATA (FinBERT compatible)
+class SentimentRecord(BaseModel):
+    symbol: str
+    timestamp: datetime
+    source: str  # 'news', 'filings', 'social', etc.
+    text: str
+
+    # FinBERT outputs probabilities for each class
+    positive: float
+    neutral: float
+    negative: float
+
+
+    @field_validator("positive", "neutral", "negative")
+    def probability_range(cls, val):
+        if not 0 <= val <= 1:
+            raise ValueError("FinBERT probabilities must be between 0 and 1")
+        return val
+
+    @field_validator("positive")
+    def prob_sum(cls, v, values):
+        '''
+        Validate that positive + neutral + negative = 1
+        Only runs once (on field 'positive'), after the other fields are present.
+        '''
+        neg = values.get("negative")
+        neu = values.get("neutral")
+        if neg is not None and neu is not None:
+            total = v + neg + neu
+            if abs(total - 1.0) > 1e-3:
+                raise ValueError(
+                    f"FinBERT probability sum must be 1 (got {total})"
+                )
+        return v
+
+class MacroIndicator(BaseModel):
+    date: datetime
+    indicator: str  # 'vix', 'treasury_10y', etc.
+    value: Optional[float]    # cleaned numeric
+    raw: Optional[str] = None # original format/string
+    unit: Optional[str] = None  # "%", "bps", "index", etc.
+
+class EnhancedFundamental(BaseModel):
+    symbol: str
+    market_cap: Optional[float]
+    pe_ratio: Optional[float]
+    peg_ratio: Optional[float]
+    price_to_book: Optional[float]
+    roe: Optional[float]  
+    profit_margin: Optional[float]
+    operating_margin: Optional[float]
+    debt_to_equity: Optional[float]
+    beta: Optional[float]
+    dividend_yield: Optional[float]
+    sector: Optional[str]
+    industry: Optional[str]
+    week_52_high: Optional[float]
+    week_52_low: Optional[float]
+
+class SECFiling(BaseModel):
+    symbol: str
+    filing_date: datetime
+    form_type: str  # '8-K', '13F-HR', '10-Q', etc.
+    accession_number: str
+    url: Optional[str] = None
+
+# OLD
+
 class PriceRecord(BaseModel):
     Date: datetime
     Open: float
