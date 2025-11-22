@@ -4,3 +4,5 @@ TODO:
 - Implement Regime Change Detection
 - Update FastAPI schema with updated data
 - Create React frontent to display the data and connect to FastAPI
+
+(branch 2.0)
